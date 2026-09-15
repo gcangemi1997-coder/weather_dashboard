@@ -60,9 +60,9 @@ Apri `js/config.js` e sostituisci `INCOLLA_QUI_LA_TUA_API_KEY` con la tua chiave
 
 ### 4. Apri l'applicazione
 
-Puoi aprire direttamente `index.html` con un doppio clic: l'applicazione usa esclusivamente file statici e risorse CDN.
+Doppio clic su `index.html`. Funziona senza server locale, perché tutte le risorse sono file statici o CDN.
 
-Per un server locale, utile durante lo sviluppo e il live reload:
+Se preferisci un server locale (utile per il live reload durante lo sviluppo):
 
 ```bash
 python -m http.server 8000
@@ -136,13 +136,17 @@ Per una protezione completa sarebbe necessario un backend proxy che custodisca l
 
 ### Retry, timeout e backoff
 
-Le chiamate a OpenWeather includono una gestione degli errori composta da:
+La API key di OpenWeather **non è mai committata**. Vive in `js/config.js`, che è in `.gitignore`. Il repository pubblico contiene solo `js/config.example.js` con un placeholder.
 
-- due tentativi totali: una richiesta iniziale e un retry;
-- backoff esponenziale con jitter, secondo una logica equivalente a `base * 2^attempt + random`;
-- timeout di cinque secondi per tentativo tramite `AbortController`;
-- nessun retry per gli errori 4xx definitivi, fatta eccezione per il rate limit `429`;
-- callback `onRetry`, usata dalla UI per mostrare lo stato di ripetizione della richiesta.
+Ci sono due modi per fornirla al progetto:
+
+**In locale.** Copia `js/config.example.js` in `js/config.js` e sostituisci `INCOLLA_QUI_LA_TUA_API_KEY` con la tua key. Il file non verrà mai committato.
+
+**Su Vercel.** La key è configurata come variabile d'ambiente (`WEATHER_API_KEY`) nella dashboard del progetto. Al deploy, Vercel esegue `npm run build`, che lancia `scripts/generate-config.js`: lo script legge `config.example.js`, sostituisce il placeholder con il valore della variabile, e scrive `js/config.js`. Così la key non è mai visibile nel repository né nei log di build.
+
+**Perché è importante.** Una API key committata è compromessa per sempre: anche se la rimuovi in un commit successivo, resta nello storico Git, che è pubblico e permanente. Inoltre, su un'applicazione solo front-end la key finisce comunque nel browser al momento dell'uso, quindi va **ristretta al dominio di produzione** dalle impostazioni di OpenWeather. Il `.gitignore` protegge lo storico, la restrizione di dominio protegge dall'abuso.
+
+**In produzione reale.** La strategia corretta sarebbe un backend proxy che tiene la key lato server e la inietta nelle chiamate. Per un progetto dimostrativo con deploy statico, la combinazione `.gitignore` + variabile d'ambiente + restrizione di dominio è il compromesso ragionevole.
 
 ### Fuso orario di Lodi, non del browser
 
