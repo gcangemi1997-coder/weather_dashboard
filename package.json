@@ -1,0 +1,12 @@
+{
+  "name": "tempo-lodigiano",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dashboard meteo editoriale per Lodi, Italia",
+  "scripts": {
+    "build": "node scripts/generate-config.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
