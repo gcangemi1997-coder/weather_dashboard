@@ -102,7 +102,16 @@
 
   let refreshTimerId = null;
 
+  /* Al primo caricamento, lo skeleton resta visibile per almeno
+     MIN_SKELETON_MS millisecondi. Così l'utente percepisce il
+     caricamento anche se la fetch è velocissima. I refresh
+     successivi (auto-refresh, cambio giorno) non sono rallentati. */
+  const MIN_SKELETON_MS = 600;
+  let isFirstLoad = true;
+
   function refresh() {
+    const startTime = Date.now();
+
     return window.WeatherAPI.fetchAll({
       onRetry: ({ attempt, maxAttempts }) => {
         if (window.WeatherUI) {
@@ -111,24 +120,38 @@
       },
     })
       .then((data) => {
-        // RENDER UI
+        const render = () => {
+          // Render della UI
+          if (window.WeatherUI) {
+            window.WeatherUI.render(data);
+          }
 
-        if (window.WeatherUI) {
-          window.WeatherUI.render(data);
+          // Sfondo canvas: prendo la categoria dal meteo corrente
+          if (window.WeatherCanvas && data.days && data.days.length) {
+            // Uso la categoria del primo giorno (Oggi), coerente
+            // con la selezione iniziale della colonna sinistra.
+            const cat =
+              data.days[0].category ||
+              window.WeatherAPI.categoryFor(data.current.weather[0].id);
+            window.WeatherCanvas.setCategory(cat);
+            window.WeatherCanvas.start();
+          }
+
+          return data;
+        };
+
+        // Primo caricamento: rispetta il minimo di skeleton
+        if (isFirstLoad) {
+          isFirstLoad = false;
+          const elapsed = Date.now() - startTime;
+          const wait = Math.max(0, MIN_SKELETON_MS - elapsed);
+          return new Promise((resolve) => setTimeout(resolve, wait)).then(
+            render,
+          );
         }
 
-        // SFONDO CANVAS IN BASE AL METEO
-        if (window.WeatherCanvas && data.days && data.days.length) {
-          // Uso la categoria del primo giorno (Oggi), coerente
-          // con la selezione iniziale della colonna sinistra.
-          const cat =
-            data.days[0].category ||
-            window.WeatherAPI.categoryFor(data.current.weather[0].id);
-          window.WeatherCanvas.setCategory(cat);
-          window.WeatherCanvas.start();
-        }
-
-        return data;
+        // Refresh successivi: render immediato
+        return render();
       })
       .catch((err) => {
         console.error("[main.js] fetch fallita:", err);
@@ -151,7 +174,7 @@
 
         if (!document.hidden) refresh();
       },
-      minutes * 60 * 1000,
+      minutes * 70 * 1000,
     );
   }
 

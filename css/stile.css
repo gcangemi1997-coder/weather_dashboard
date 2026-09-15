@@ -927,8 +927,29 @@ LO SCRIPT IN BASE AL GIORNO */
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
+.footer-link::before {
+  margin-right: 0.5rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition:
+    color 0.25s var(--ease),
+    text-decoration-thickness 0.25s var(--ease);
+}
+
+.footer-link:hover {
+  text-decoration-thickness: 2px;
+}
 /* ERRORE GLOBALE */
 
 .error {

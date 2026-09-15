@@ -4,6 +4,8 @@ Dashboard meteo editoriale per Lodi, Italia. Un progetto front-end senza framewo
 
 L'applicazione combina meteo attuale, previsioni, narrativa editoriale e un canvas animato in un'interfaccia responsive con tema chiaro/scuro.
 
+🔗 **[Tempo Lodigiano](https://weatherdashboard-ivory-nine.vercel.app/)**
+
 ## Indice
 
 - [Caratteristiche](#caratteristiche)
