@@ -1,0 +1,11 @@
+# FILE CONFIG CON API KEY, NON COMMITTATO
+js/config.js
+
+# SISTEMA
+.DS_Store
+Thumbs.db
+node_modules/
+
+# EDITOR
+.vscode/
+.idea/

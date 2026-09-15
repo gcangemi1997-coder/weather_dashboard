@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard meteo editoriale per Lodi, Italia.">
+    <meta name="theme-color" content="#fdf6ec">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Tempo Lodigiano">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:title" content="Tempo Lodigiano — Dashboard meteo per Lodi">
+    <meta property="og:description"
+        content="Meteo attuale, previsioni orarie e a 5 giorni per Lodi. Con canvas animato e frasi ironiche.">
+    <meta property="og:url" content="https://tempo-lodigiano.vercel.app/">
+    <meta property="og:image" content="https://tempo-lodigiano.vercel.app/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Anteprima della dashboard meteo Tempo Lodigiano">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tempo Lodigiano — Dashboard meteo per Lodi">
+    <meta name="twitter:description" content="Meteo attuale, previsioni orarie e a 5 giorni per Lodi.">
+    <meta name="twitter:image" content="https://tempo-lodigiano.vercel.app/assets/og-image.png">
+    <title>Tempo Lodigiano</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+    <link rel="stylesheet" href="css/stile.css">
+</head>
+
+<body>
+
+    <script>
+        //APPLICO IL TEMA PRIMA CHE LA PAGINA VENGA DISEGNATA, 
+        // PER EVITARE IL "FLASH" DEL TEMA CHIARO A CHI HA SCELTO LO SCURO
+        if (localStorage.getItem('tl-theme') === 'dark') {
+            document.body.classList.add('dark');
+        }
+    </script>
+
+    <!-- INSERITO CANVAS PER VISUALIZZAZIONE DEL METEO -->
+    <canvas id="weatherCanvas" aria-hidden="true"></canvas>
+
+    <header class="site-header">
+        <div class="container header-inner">
+
+            <a href="index.html" class="brand">Tempo Lodigiano</a>
+
+            <div class="header-center">
+                <p class="hero-time" id="liveTime">—:—</p>
+                <p class="hero-eyebrow" id="liveDate">—</p>
+            </div>
+
+            <div class="header-right">
+                <nav aria-label="Navigazione principale">
+                    <a href="index.html" class="nav-link is-active" aria-label="Dashboard" aria-current="page">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+
+                    <a href="impostazioni.html" class="nav-link" aria-label="Impostazioni">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            aria-hidden="true">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                        <span class="nav-text">Impostazioni</span>
+                    </a>
+                </nav>
+
+                <button class="theme-switch" id="themeSwitch" type="button" aria-label="Cambia tema"
+                    aria-pressed="false">
+                    <span class="knob" id="themeKnob">☀️</span>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- SEZIONE HERO -->
+        <section class="hero" aria-labelledby="hero-title">
+            <h1 class="hero-title" id="hero-title">
+                <span class="hero-temp" id="currentTemp">—°</span>
+                <span class="hero-place">a Lodi</span>
+            </h1>
+
+            <p class="hero-narrative" id="currentNarrative">
+                Sto leggendo il cielo sopra Lodi…
+            </p>
+
+            <dl class="hero-details">
+                <div class="detail">
+                    <dt>Percepita</dt>
+                    <dd id="feelsLike">—°</dd>
+                </div>
+                <div class="detail">
+                    <dt>Umidità</dt>
+                    <dd id="humidity">—%</dd>
+                </div>
+                <div class="detail">
+                    <dt>Vento</dt>
+                    <dd id="wind">— km/h</dd>
+                </div>
+                <div class="detail">
+                    <dt>Pressione</dt>
+                    <dd id="pressure">— hPa</dd>
+                </div>
+            </dl>
+        </section>
+
+        <!-- SEZIONE DASHBOARD A DUE COLONNE -->
+        <div class="dashboard-grid">
+
+            <!-- COLONNA SINISTRA -->
+            <section class="forecast-section" aria-labelledby="days-title">
+                <header class="section-header">
+                    <h2 id="days-title">I prossimi giorni</h2>
+                </header>
+
+                <!-- VISUALIZZAZIONE DESKTOP -->
+                <div class="days-list" id="daysList"></div>
+
+                <!-- VISUALIZZAZIONE MOBILE -->
+                <div class="mobile-day-picker" id="mobileDayPicker">
+                    <button class="mobile-day-trigger" id="mobileDayTrigger" type="button" aria-haspopup="listbox"
+                        aria-expanded="false">
+                        <span id="mobileDayLabel">—</span>
+                        <span class="caret" aria-hidden="true">▼</span>
+                    </button>
+
+                    <div class="mobile-day-options" role="listbox" id="mobileDayOptions"></div>
+                </div>
+
+                <div class="mobile-day-details" id="mobileDayDetails">
+                    <div class="item"><span class="label">Descrizione</span><span class="value" id="mDesc">—</span>
+                    </div>
+                    <div class="item"><span class="label">Umidità</span><span class="value" id="mHum">—</span></div>
+                    <div class="item"><span class="label">Vento</span><span class="value" id="mWind">—</span></div>
+                    <div class="item"><span class="label">Alba</span><span class="value" id="mSunrise">—</span></div>
+                    <div class="item"><span class="label">Tramonto</span><span class="value" id="mSunset">—</span></div>
+                </div>
+            </section>
+
+            <!-- COLONNA DESTRA - TIMELINE ORARIA -->
+            <section class="forecast-section" aria-labelledby="hours-title">
+                <header class="section-header">
+                    <h2 id="hoursTitle">Oggi, ora per ora</h2>
+                </header>
+
+                <div class="hours-scroll">
+                    <ol class="hours-timeline" id="hoursTimeline"></ol>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ERRORE GLOBALE - NASCOSTO DI DEFAULT - VISIBILE SOLO SE LA FETCH FALLISCE -->
+        <p class="error" id="errorMessage" role="alert" hidden></p>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>Dati meteo offerti da OpenWeather. Sono stati molto gentili 🤗​ .</p>
+            <p class="footer-note">© <span id="year">2026</span> — Progetto dimostrativo</p>
+        </div>
+    </footer>
+
+    <!-- 
+    SEZIONE SCRIPT - UTILIZZATO DEFER 
+    PER PERMETTERE DI SCARICARE IN BACKGROUND
+    GLI SCRIPT ED UTILIZZARLI 
+    SOLO DOPO IL CARICAMENTO DELL'HTML -->
+    <script src="js/config.js" defer></script>
+    <script src="js/api.js" defer></script>
+    <script src="js/canvas.js" defer></script>
+    <script src="js/ui.js" defer></script>
+    <script src="js/main.js" defer></script>
+
+</body>
+
+</html>

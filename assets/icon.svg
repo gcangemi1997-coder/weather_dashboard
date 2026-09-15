@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fdf6ec"/>
+      <stop offset="1" stop-color="#e8c9b0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sfondo arrotondato, stessa palette del sito -->
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+
+  <!-- Sole dietro la nuvola -->
+  <circle cx="42" cy="26" r="11" fill="#c2410c"/>
+
+  <!-- Nuvola in primo piano -->
+  <path d="M14 48
+           Q14 37 25 37
+           Q27 30 34 30
+           Q43 30 45 39
+           Q53 39 53 48
+           Z"
+        fill="#7a6a56"/>
+</svg>

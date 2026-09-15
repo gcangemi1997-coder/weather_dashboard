@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Impostazioni di Tempo Lodigiano.">
+    <meta name="theme-color" content="#fdf6ec">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Tempo Lodigiano">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:title" content="Tempo Lodigiano — Dashboard meteo per Lodi">
+    <meta property="og:description"
+        content="Meteo attuale, previsioni orarie e a 5 giorni per Lodi. Con canvas animato e frasi ironiche.">
+    <meta property="og:url" content="https://tempo-lodigiano.vercel.app/">
+    <meta property="og:image" content="https://tempo-lodigiano.vercel.app/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Anteprima della dashboard meteo Tempo Lodigiano">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tempo Lodigiano — Dashboard meteo per Lodi">
+    <meta name="twitter:description" content="Meteo attuale, previsioni orarie e a 5 giorni per Lodi.">
+    <meta name="twitter:image" content="https://tempo-lodigiano.vercel.app/assets/og-image.png">
+    <title>Tempo Lodigiano</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+    <link rel="stylesheet" href="css/stile.css">
+</head>
+
+<body>
+
+    <script>
+
+        // APPLICO IL TEMA PRIMA CHE LA PAGINA VENGA DISEGNATA, 
+        // PER EVITARE IL "FLASH" DEL TEMA CHIARO A CHI HA SCELTO LO SCURO
+        if (localStorage.getItem('tl-theme') === 'dark') {
+            document.body.classList.add('dark');
+        }
+    </script>
+
+    <canvas id="weatherCanvas" aria-hidden="true"></canvas>
+
+    <header class="site-header">
+        <div class="container header-inner header-inner--minimal">
+
+            <nav aria-label="Navigazione principale">
+                <a href="index.html" class="nav-link" aria-label="Dashboard">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+
+                <a href="impostazioni.html" class="nav-link is-active" aria-label="Impostazioni" aria-current="page">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                        </path>
+                    </svg>
+                    <span class="nav-text">Impostazioni</span>
+                </a>
+            </nav>
+
+            <button class="theme-switch theme-switch--header" type="button" aria-label="Cambia tema"
+                aria-pressed="false">
+                <span class="knob">☀️</span>
+            </button>
+
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section class="hero hero-compact" aria-labelledby="settings-title">
+            <h1 class="hero-title hero-title-small" id="settings-title">
+                Impostazioni
+            </h1>
+            <p class="hero-narrative">
+                Due preferenze, salvate nel browser. Si sincronizzano tra dashboard e impostazioni.
+            </p>
+        </section>
+
+        <section class="settings-section">
+
+            <!-- TEMA -->
+            <div class="settings-card settings-card--theme">
+                <div class="settings-row">
+                    <div class="settings-text">
+                        <h2>Tema</h2>
+                        <p>Chiaro per il giorno, scuro per la notte.</p>
+                    </div>
+                    <div class="settings-control">
+                        <span class="settings-value" id="themeValue">Chiaro</span>
+                        <button class="theme-switch" id="themeSwitch2" type="button" aria-label="Cambia tema"
+                            aria-pressed="false">
+                            <span class="knob" id="themeKnob2">☀️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unità di temperatura -->
+            <div class="settings-card">
+                <div class="settings-row">
+                    <div class="settings-text">
+                        <h2>Unità di temperatura</h2>
+                        <p>Scegli come leggere i gradi su tutta la dashboard.</p>
+                    </div>
+                    <div class="settings-control">
+                        <div class="unit-toggle" role="radiogroup" aria-label="Unità di temperatura">
+                            <button class="unit-btn is-active" id="unitCelsius" type="button" role="radio"
+                                aria-checked="true" data-unit="celsius">°C</button>
+                            <button class="unit-btn" id="unitFahrenheit" type="button" role="radio" aria-checked="false"
+                                data-unit="fahrenheit">°F</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ritorno alla dashboard -->
+            <div class="settings-card">
+                <div class="settings-row">
+                    <div class="settings-text">
+                        <h2>Torna alla dashboard</h2>
+                        <p>Le previsioni di Lodi ti aspettano.</p>
+                    </div>
+                    <div class="settings-control">
+                        <a href="index.html" class="link-button">Apri la dashboard</a>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>Dati meteo da OpenWeather. Fatto a mano, con calma.</p>
+            <p class="footer-note">© <span id="year">2026</span> — Progetto dimostrativo</p>
+        </div>
+    </footer>
+
+    <!--
+    La pagina impostazioni condivide config, canvas e la logica tema con main.js.
+    api.js e ui.js non servono: qui non carichiamo dati meteo.
+  -->
+    <script src="js/config.js" defer></script>
+    <script src="js/canvas.js" defer></script>
+    <script src="js/main.js" defer></script>
+
+</body>
+
+</html>
