@@ -72,7 +72,7 @@ python -m http.server 8000
 
 Poi visita [http://localhost:8000](http://localhost:8000).
 
-## Struttura del progetto
+### 5. Struttura del progetto
 
 ```text
 weather_dashboard/
@@ -100,7 +100,7 @@ weather_dashboard/
 └── README.md
 ```
 
-## Stack tecnologico
+### 6. Stack tecnologico
 
 | Area       | Tecnologia                                        | Utilizzo                                              |
 | ---------- | ------------------------------------------------- | ----------------------------------------------------- |
@@ -113,7 +113,7 @@ weather_dashboard/
 | Hosting    | Vercel                                            | Deploy automatico dal repository GitHub               |
 | Versioning | Git e GitHub                                      | Configurazione locale esclusa dallo storico           |
 
-## Scelte tecniche
+### 7. Scelte tecniche
 
 ### Nessun framework o bundler
 
@@ -150,13 +150,26 @@ Ci sono due modi per fornirla al progetto:
 
 **In produzione reale.** La strategia corretta sarebbe un backend proxy che tiene la key lato server e la inietta nelle chiamate. Per un progetto dimostrativo con deploy statico, la combinazione `.gitignore` + variabile d'ambiente + restrizione di dominio è il compromesso ragionevole.
 
-### Fuso orario di Lodi, non del browser
+### 8. Retry sulle chiamate API
+
+Le chiamate a OpenWeather hanno una logica di retry robusta:
+
+- **2 tentativi totali** (1 iniziale + 1 retry). Il secondo scatta solo su errori ritentabili: timeout, errori di rete, 5xx, 429.
+- **Backoff esponenziale con jitter**: l'attesa tra i tentativi è `base * 2^attempt + random`. Il jitter serve a evitare che più client riprovino tutti nello stesso istante.
+- **Timeout di 5 secondi** per tentativo, via `AbortController`. Senza questo, una connessione bloccata lascerebbe la richiesta appesa per sempre.
+- **Nessun retry sui 4xx** (a parte il 429), perché sono errori definitivi: se la API key è sbagliata, non diventa giusta al secondo tentativo. Il codice li marca con `err.definitive = true` e li rilancia subito.
+- **Rispetta l'header `Retry-After`** quando presente, per non violare i limiti del server.
+- **Callback `onRetry`**: `main.js` la passa come `WeatherUI.showRetrying`, così durante il retry la UI mostra _"Sto riprovando a leggere il cielo sopra Lodi… (1/2)"_.
+
+Nel peggiore dei casi l'utente aspetta circa **11 secondi** prima di vedere l'errore finale (5s di timeout + 0,9s di attesa + 5s di timeout).
+
+#### 9. Fuso orario di Lodi, non del browser
 
 Tutte le chiamate a OpenWeather passano `dalla TimeZone Europa/Roma`. Le date vengono convertite usando l'offset di fuso che OpenWeather restituisce in `forecast.city.timezone`, non con `new Date()` (che userebbe il fuso del visitatore).
 
 Se un utente apre il sito da Londra, la timeline delle 18:00 a Lodi deve restare “18:00”, non diventare “17:00”. Le funzioni `dayKeyFromDate`, `formatDateShort`, `formatHour` usano i metodi `getUTC*` sul `Date` già convertito, che è il modo corretto di gestire un fuso “fisso” in JavaScript senza librerie.
 
-### Canvas dinamico
+### 10. Canvas dinamico
 
 Il canvas è scritto senza librerie di animazione e disegna scenari diversi in base alla categoria meteo:
 
@@ -167,7 +180,7 @@ Il canvas è scritto senza librerie di animazione e disegna scenari diversi in b
 
 Il loop usa `requestAnimationFrame` con delta time normalizzato, così l'animazione mantiene un comportamento coerente su schermi a 60 Hz e 144 Hz. Il rendering si interrompe quando la scheda non è visibile e rispetta `prefers-reduced-motion`.
 
-### Eventi custom
+### 11. Eventi custom
 
 Il cambio del giorno selezionato viene comunicato tramite l'evento custom `weather:day-change`:
 
@@ -177,7 +190,7 @@ ui.js → dispatch('weather:day-change') → main.js → canvas.setCategory()
 
 `ui.js` non conosce il canvas e `canvas.js` non conosce la UI. `main.js` coordina i moduli, applicando un semplice pattern observer e mantenendo separate responsabilità e dipendenze.
 
-### Accordion con CSS Grid
+### 12. Accordion con CSS Grid
 
 Gli accordion usano la transizione da `0fr` a `1fr`, evitando valori `max-height` fissi:
 
@@ -195,7 +208,7 @@ Gli accordion usano la transizione da `0fr` a `1fr`, evitando valori `max-height
 
 Il contenuto può quindi avere altezze diverse senza ricalibrare manualmente la transizione.
 
-### Architettura modulare
+### 13. Architettura modulare
 
 | Modulo      | Responsabilità                           | API principale                   |
 | ----------- | ---------------------------------------- | -------------------------------- |
@@ -208,7 +221,7 @@ Il contenuto può quindi avere altezze diverse senza ricalibrare manualmente la 
 
 Ogni modulo è esposto come oggetto globale — `window.WeatherAPI`, `window.WeatherUI` e `window.WeatherCanvas` — mentre `main.js` è l'unico modulo che li conosce tutti.
 
-## Accessibilità
+### 14. Accessibilità
 
 Il progetto include:
 
@@ -220,7 +233,7 @@ Il progetto include:
 - `role="alert"` per i messaggi di errore;
 - supporto a `prefers-reduced-motion`, con animazioni e transizioni ridotte o disattivate.
 
-## Tecnologie valutate
+### 15. Tecnologie valutate
 
 ### jQuery
 
@@ -266,7 +279,7 @@ Rimandati. In futuro sarebbe utile introdurre Vitest per testare in isolamento l
 
 Rimandata. Un service worker e un manifest permetterebbero installazione su mobile e funzionamento offline con l'ultima previsione salvata.
 
-## Deploy
+### 16. Deploy
 
 Il progetto è pubblicato su [Vercel](https://vercel.com/) con deploy automatico dal repository GitHub.
 
@@ -281,7 +294,7 @@ Ogni push sul branch `main` genera un nuovo deploy. In produzione, la variabile 
 
 Vercel eseguirà `npm run build` e pubblicherà la cartella statica configurata dal progetto.
 
-## Sviluppi futuri
+### 17. Sviluppi futuri
 
 - Ampliare il dizionario delle frasi narrative con variazioni per ora del giorno e stagione.
 - Estendere la timeline oltre le 24 ore con granularità oraria.
@@ -290,7 +303,7 @@ Vercel eseguirà `npm run build` e pubblicherà la cartella statica configurata 
 - Aggiungere test automatici con Vitest per le funzioni pure di `api.js`.
 - Introdurre la ricerca di città con il geocoding di OpenWeather.
 
-## Licenza
+### 18. Licenza
 
 Progetto dimostrativo. Sentiti libero di usarlo come riferimento.
 
